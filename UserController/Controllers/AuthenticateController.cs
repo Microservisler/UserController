@@ -4,10 +4,12 @@ using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
+using AutoMapper;
 using Microsoft.EntityFrameworkCore;
 using UserController.Auth;
 using UserController.Contexts;
 using UserController.Models;
+using UserController.Models.DTOs;
 using UserController.Models.General;
 
 namespace UserController.Controllers
@@ -20,6 +22,12 @@ namespace UserController.Controllers
         private readonly RoleManager<IdentityRole> _roleManager;
         private readonly DataContext _context;
         private readonly IConfiguration _configuration;
+
+        private MapperConfiguration _mapper => new(cfg =>
+        {
+            cfg.CreateMap<CreateUserDto, User>();
+            cfg.CreateMap<UpdateUserDto, User>();
+        });
 
         public AuthenticateController(
             UserManager<IdentityUser> userManager,
@@ -66,6 +74,9 @@ namespace UserController.Controllers
 
         [HttpPost]
         [Route("register")]
+        [ProducesResponseType(typeof(User), 200)]
+        [Consumes("application/json")]
+        [Produces("application/json")]
         public async Task<IActionResult> Register([FromBody] RegisterModel model)
         {
             var userExists = await _userManager.FindByNameAsync(model.Username);
@@ -260,6 +271,117 @@ namespace UserController.Controllers
                 response.Errors = new[] { error };
                 return StatusCode(500, response);
             }
+        }
+
+        [HttpPut]
+        [Route("user/{id:string}")]
+        public async Task<IActionResult> UpdateUser(string id, [FromBody] UpdateUserDto userDto)
+        {
+            var user = _mapper.CreateMapper().Map<User>(userDto);
+
+            var response = new Response<User>()
+            {
+                Status = 0,
+                Cached = 0,
+                Count = 0
+            };
+
+            if (id != userDto.Id)
+            {
+                var badRequestError = new ErrorResponse()
+                {
+                    Status = Request.HttpContext.Response.StatusCode,
+                    RequestUrl = Request.Path,
+                    Title = "IDs not match",
+                    Message =
+                        "Requested id and the user id does not match. Please double-check the both id and the body"
+                };
+
+                response.Errors = new[] { badRequestError };
+                return BadRequest(response);
+            }
+
+            var userToUpdate = await _context.Users
+                .AsNoTracking()
+                .FirstOrDefaultAsync(x => x.Id == id);
+
+            if (userToUpdate == null)
+            {
+                var notFoundError = new ErrorResponse()
+                {
+                    Status = Request.HttpContext.Response.StatusCode,
+                    RequestUrl = Request.Path,
+                    Title = "user not found",
+                    Message = $"User with id \"{id}\" not found"
+                };
+
+                response.Errors = new[] { notFoundError };
+                return NotFound(response);
+            }
+
+            try
+            {
+                user.Code = userDto.Code ?? userToUpdate.Code;
+                user.BirthDate = userDto.BirthDate ?? userToUpdate.BirthDate;
+                user.Email = userDto.Email ?? userToUpdate.Email;
+                user.AccessFailedCount = userDto.AccessFailedCount ?? userToUpdate.AccessFailedCount;
+                user.ConcurrencyStamp = userDto.ConcurrencyStamp ?? userToUpdate.ConcurrencyStamp;
+                user.EmailConfirmed = userDto.EmailConfirmed ?? userToUpdate.EmailConfirmed;
+                user.FirstName = userDto.FirstName ?? userToUpdate.FirstName;
+                user.LastName = userDto.LastName ?? userToUpdate.LastName;
+                user.LockoutEnd = userDto.LockoutEnd ?? userToUpdate.LockoutEnd;
+                user.Newsletter = userDto.Newsletter ?? userToUpdate.Newsletter;
+                user.NormalizedEmail = userDto.NormalizedEmail ?? userToUpdate.NormalizedEmail;
+                user.NormalizedUserName = userDto.NormalizedUserName ?? userToUpdate.NormalizedUserName;
+                user.UserName = userDto.UserName ?? userToUpdate.UserName;
+                user.Telefon = userDto.Telefon ?? userToUpdate.Telefon;
+                user.TcKimlik = userDto.TcKimlik ?? userToUpdate.TcKimlik;
+                user.SecurityStamp = userDto.SecurityStamp ?? userToUpdate.SecurityStamp;
+                user.PrivateDiscountType = userDto.PrivateDiscountType ?? userToUpdate.PrivateDiscountType;
+                user.PhoneNumber = userDto.PhoneNumber ?? userToUpdate.PhoneNumber;
+                user.PasswordHash = userDto.PasswordHash ?? userToUpdate.PasswordHash;
+
+                _context.Entry(user).State = EntityState.Modified;
+
+
+            }
+            catch (Exception e)
+            {
+                var error = new ErrorResponse()
+                {
+                    Status = Request.HttpContext.Response.StatusCode,
+                    RequestUrl = Request.Path,
+                    Title = "Internal Server Error",
+                    Message = e.InnerException?.Message ?? e.Message
+                };
+
+                response.Errors = new[] { error };
+                return StatusCode(500, response);
+            }
+
+            try
+            {
+                await _context.SaveChangesAsync();
+            }
+            catch (Exception e)
+            {
+                var error = new ErrorResponse()
+                {
+                    Status = Request.HttpContext.Response.StatusCode,
+                    RequestUrl = Request.Path,
+                    Title = "Internal Server Error",
+                    Message = e.InnerException?.Message ?? e.Message
+                };
+
+                response.Errors = new[] { error };
+                return StatusCode(500, response);
+            }
+
+            response.Status = 1;
+            response.Count = 1;
+            response.Message = $"User with id \"{user.Id}\" updated successfully";
+            response.Data = user;
+            return Ok(response);
         }
 
         private string NextPageUrl(RequestParameters parameters, int total)
