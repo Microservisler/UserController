@@ -274,7 +274,7 @@ namespace UserController.Controllers
         }
 
         [HttpPut]
-        [Route("user/{id:string}")]
+        [Route("user/{id}")]
         public async Task<IActionResult> UpdateUser(string id, [FromBody] UpdateUserDto userDto)
         {
             var user = _mapper.CreateMapper().Map<User>(userDto);
