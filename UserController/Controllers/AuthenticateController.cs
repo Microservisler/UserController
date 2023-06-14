@@ -284,6 +284,8 @@ namespace UserController.Controllers
         [Route("user/{id}")]
         public async Task<IActionResult> UpdateUser(string id, [FromBody] UpdateUserDto userDto)
         {
+            
+
             var user = _mapper.CreateMapper().Map<User>(userDto);
 
             var response = new Response<User>()
@@ -292,6 +294,20 @@ namespace UserController.Controllers
                 Cached = 0,
                 Count = 0
             };
+
+            if (string.IsNullOrEmpty(id))
+            {
+                var badRequest = new ErrorResponse()
+                {
+                    Status = Request.HttpContext.Response.StatusCode,
+                    RequestUrl = Request.Path,
+                    Title = "No id given",
+                    Message = "In order for this method to work you need to pass in a user id"
+                };
+
+                response.Errors = new[] { badRequest };
+                return BadRequest(response);
+            }
 
             if (id != userDto.Id)
             {
