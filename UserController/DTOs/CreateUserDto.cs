@@ -1,8 +1,7 @@
-﻿namespace UserController.Models.DTOs;
+﻿namespace UserController.DTOs;
 
-public class UpdateUserDto
+public class CreateUserDto
 {
-    public string Id { get; set; } = null!;
     public string? UserName { get; set; }
 
     public string? NormalizedUserName { get; set; }
@@ -19,21 +18,21 @@ public class UpdateUserDto
 
     public string? PhoneNumber { get; set; }
 
-    public string? Code { get; set; }
+    public string Code { get; set; }
 
-    public string? FirstName { get; set; }
+    public string FirstName { get; set; }
 
-    public string? LastName { get; set; }
+    public string LastName { get; set; }
 
     public string? TcKimlik { get; set; }
 
-    public string? Telefon { get; set; }
+    public string Telefon { get; set; }
 
-    public DateTime? BirthDate { get; set; }
+    public DateTime BirthDate { get; set; }
 
-    public int? Newsletter { get; set; }
+    public int Newsletter { get; set; }
 
-    public int? PrivateDiscountType { get; set; }
+    public int PrivateDiscountType { get; set; }
 
     public bool? PhoneNumberConfirmed { get; set; } = false;
 
@@ -43,7 +42,7 @@ public class UpdateUserDto
 
     public DateTimeOffset? LockoutEnd { get; set; }
 
-    public bool? LockoutEnabled { get; set; }
+    public bool LockoutEnabled { get; set; }
 
     public int? AccessFailedCount { get; set; } = 0;
 }

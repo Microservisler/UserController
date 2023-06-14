@@ -18,6 +18,7 @@ namespace UserController.Contexts
         }
 
         public virtual DbSet<Address> Addresses { get; set; } = null!;
+        public virtual DbSet<AspNetUser> AspNetUsers { get; set; } = null!;
         public virtual DbSet<City> Cities { get; set; } = null!;
         public virtual DbSet<Country> Countries { get; set; } = null!;
         public virtual DbSet<District> Districts { get; set; } = null!;
@@ -46,6 +47,13 @@ namespace UserController.Contexts
                     .WithMany(p => p.Addresses)
                     .HasForeignKey(d => d.UserId)
                     .OnDelete(DeleteBehavior.ClientSetNull);
+            });
+
+            modelBuilder.Entity<AspNetUser>(entity =>
+            {
+                entity.HasIndex(e => e.NormalizedUserName, "UserNameIndex")
+                    .IsUnique()
+                    .HasFilter("([NormalizedUserName] IS NOT NULL)");
             });
 
             modelBuilder.Entity<City>(entity =>

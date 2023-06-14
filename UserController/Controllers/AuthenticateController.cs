@@ -9,8 +9,9 @@ using Microsoft.EntityFrameworkCore;
 using UserController.Auth;
 using UserController.Contexts;
 using UserController.Models;
-using UserController.Models.DTOs;
-using UserController.Models.General;
+using UserController.DTOs;
+using UserController.General;
+using UserController.Services.Interfaces;
 
 namespace UserController.Controllers
 {
@@ -20,6 +21,7 @@ namespace UserController.Controllers
     {
         private readonly UserManager<IdentityUser> _userManager;
         private readonly RoleManager<IdentityRole> _roleManager;
+        private readonly IUserService _userService;
         private readonly DataContext _context;
         private readonly IConfiguration _configuration;
 
@@ -33,12 +35,14 @@ namespace UserController.Controllers
             UserManager<IdentityUser> userManager,
             RoleManager<IdentityRole> roleManager,
             IConfiguration configuration,
-            DataContext context)
+            DataContext context, 
+            IUserService userService)
         {
             _userManager = userManager;
             _roleManager = roleManager;
             _configuration = configuration;
             _context = context;
+            _userService = userService;
         }
 
         [HttpPost]
@@ -87,10 +91,12 @@ namespace UserController.Controllers
             {
                 Email = model.Email,
                 SecurityStamp = Guid.NewGuid().ToString(),
-                UserName = model.Username
+                UserName = model.Username,
+                PhoneNumber = model.PhoneNumber
             };
             var result = await _userManager.CreateAsync(user, model.Password);
-            if (!result.Succeeded)
+            var newUser = await _userService.Register(model);
+            if (!result.Succeeded || newUser == null)
                 return StatusCode(StatusCodes.Status500InternalServerError, new Response { Status = "Error", Message = "User creation failed! Please check user details and try again." });
 
             return Ok(new Response { Status = "Success", Message = "User created successfully!" });
@@ -111,7 +117,8 @@ namespace UserController.Controllers
                 UserName = model.Username
             };
             var result = await _userManager.CreateAsync(user, model.Password);
-            if (!result.Succeeded)
+            var newUser = await _userService.Register(model);
+            if (!result.Succeeded || newUser == null)
                 return StatusCode(StatusCodes.Status500InternalServerError, new Response { Status = "Error", Message = "User creation failed! Please check user details and try again." });
 
             if (!await _roleManager.RoleExistsAsync(UserRoles.Admin))
@@ -181,9 +188,9 @@ namespace UserController.Controllers
                 var userCount = await query.CountAsync();
 
                 var users = await query
-                    .Include(p => p.Addresses)
-                    .Skip((parameters.Page - 1) * parameters.Offset)
-                    .Take(parameters.Offset)
+                    //.Include(p => p.Addresses)
+                    //.Skip((parameters.Page - 1) * parameters.Offset)
+                    //.Take(parameters.Offset)
                     .ToListAsync();
 
                 var pagination = new PaginationResponse<List<User>>()
@@ -305,6 +312,10 @@ namespace UserController.Controllers
                 .AsNoTracking()
                 .FirstOrDefaultAsync(x => x.Id == id);
 
+            var identityUserToUpdate = await _context.AspNetUsers
+                .AsNoTracking()
+                .FirstOrDefaultAsync(x => x.Email == userToUpdate.Email);
+
             if (userToUpdate == null)
             {
                 var notFoundError = new ErrorResponse()
@@ -321,6 +332,28 @@ namespace UserController.Controllers
 
             try
             {
+                // Identity User Update
+                IdentityUser identityUser = new()
+                {
+                    UserName = userDto.UserName ?? identityUserToUpdate.UserName,
+                    NormalizedUserName = userDto.UserName.Normalize() ?? identityUserToUpdate.UserName.Normalize(),
+                    Email = userDto.Email ?? identityUserToUpdate.Email,
+                    NormalizedEmail = userDto.Email.Normalize() ?? identityUserToUpdate.Email.Normalize(),
+                    EmailConfirmed = identityUserToUpdate.EmailConfirmed,
+                    PasswordHash = identityUserToUpdate.PasswordHash,
+                    SecurityStamp = identityUserToUpdate.SecurityStamp,
+                    ConcurrencyStamp = identityUserToUpdate.ConcurrencyStamp,
+                    PhoneNumber = userDto.PhoneNumber ?? identityUserToUpdate.PhoneNumber,
+                    PhoneNumberConfirmed = identityUserToUpdate.PhoneNumberConfirmed,
+                    TwoFactorEnabled = identityUserToUpdate.TwoFactorEnabled,
+                    LockoutEnd = identityUserToUpdate.LockoutEnd,
+                    LockoutEnabled = identityUserToUpdate.LockoutEnabled,
+                    AccessFailedCount = identityUserToUpdate.AccessFailedCount
+                };
+
+                _context.Entry(identityUser).State = EntityState.Modified;
+
+                // Users user update
                 user.Code = userDto.Code ?? userToUpdate.Code;
                 user.BirthDate = userDto.BirthDate ?? userToUpdate.BirthDate;
                 user.Email = userDto.Email ?? userToUpdate.Email;

@@ -13,5 +13,17 @@ namespace UserController.Auth
 
         [Required(ErrorMessage = "Lütfen Geçerli bir Parola giriniz.")]
         public string? Password { get; set; }
+
+        [Required(ErrorMessage = "Lütfen geçerli bir telefon numarası giriniz.")]
+        public string? PhoneNumber { get; set; }
+
+        [Required(ErrorMessage = "Lütfen isminiz giriniz.")]
+        public string FirstName { get; set; }
+
+        [Required(ErrorMessage = "Lütfen soyisminizi giriniz.")]
+        public string LastName { get; set; }
+
+        [Required(ErrorMessage = "Lütfen doğum tarihinizi giriniz.")]
+        public DateTime BirthDate { get; set; }
     }
 }

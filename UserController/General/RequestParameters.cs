@@ -1,4 +1,4 @@
-﻿namespace UserController.Models.General;
+﻿namespace UserController.General;
 
 public class RequestParameters
 {

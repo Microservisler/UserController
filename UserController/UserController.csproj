@@ -19,8 +19,9 @@
 	</ItemGroup>
 
 	<ItemGroup>
-	  <Folder Include="Models\General\" />
-	  <Folder Include="Models\DTOs\" />
+	  <Folder Include="General\" />
+	  <Folder Include="DTOs\" />
+	  <Folder Include="Services\Interfaces\" />
 	</ItemGroup>
 
 </Project>
