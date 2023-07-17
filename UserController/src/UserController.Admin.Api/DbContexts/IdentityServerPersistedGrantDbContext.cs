@@ -7,9 +7,16 @@ namespace UserController.Admin.Api.DbContexts
 {
     public class IdentityServerPersistedGrantDbContext : PersistedGrantDbContext<IdentityServerPersistedGrantDbContext>, IAdminPersistedGrantDbContext
     {
-        public IdentityServerPersistedGrantDbContext(DbContextOptions options, OperationalStoreOptions storeOptions) : base(options, storeOptions)
+        public IdentityServerPersistedGrantDbContext(DbContextOptions<IdentityServerPersistedGrantDbContext> options, OperationalStoreOptions storeOptions)
+            : base(options, storeOptions)
         {
         }
     }
-
 }
+
+
+
+
+
+
+

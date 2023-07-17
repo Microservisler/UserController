@@ -46,3 +46,10 @@ namespace UserController.Admin.Api.DbContexts
         public DbSet<ApiResourceScope> ApiResourceScopes { get; set; }
     }
 }
+
+
+
+
+
+
+

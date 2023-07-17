@@ -1,6 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Skoruba.AuditLogging.EntityFramework.DbContexts;
 using Skoruba.AuditLogging.EntityFramework.Entities;
+using System;
 using System.Threading.Tasks;
 
 namespace UserController.Admin.Api.DbContexts
@@ -21,3 +22,11 @@ namespace UserController.Admin.Api.DbContexts
         public DbSet<AuditLog> AuditLog { get; set; }
     }
 }
+
+
+
+
+
+
+
+

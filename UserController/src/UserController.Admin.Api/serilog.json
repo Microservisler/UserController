@@ -19,14 +19,14 @@
             },
             {
                 "Name": "MSSqlServer",
-                "Args": {
-                    "connectionString": "Server=(localdb)\\mssqllocaldb;Database=IdentityServer4Admin;Trusted_Connection=True;MultipleActiveResultSets=true",
-                    "tableName": "Log",
-                    "columnOptionsSection": {
-                        "addStandardColumns": [ "LogEvent" ],
-                        "removeStandardColumns": [ "Properties" ]
-                    }
+              "Args": {
+                "connectionString": "Server=212.22.69.229;User ID=sa;Password=Passw0rd123.?!;Database=akilliphone_microservices;Trusted_Connection=True;MultipleActiveResultSets=true",
+                "tableName": "Log",
+                "columnOptionsSection": {
+                  "addStandardColumns": [ "LogEvent" ],
+                  "removeStandardColumns": [ "Properties" ]
                 }
+              }
             }
         ]
     }

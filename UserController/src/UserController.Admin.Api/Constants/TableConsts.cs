@@ -1,6 +1,6 @@
 ﻿namespace UserController.Admin.Api.Constants
 {
-    public class TableConsts
+    public static class TableConsts
     {
         public const string IdentityRoles = "Roles";
         public const string IdentityRoleClaims = "RoleClaims";
@@ -11,3 +11,11 @@
         public const string IdentityUserTokens = "UserTokens";
     }
 }
+
+
+
+
+
+
+
+
